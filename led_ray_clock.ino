@@ -58,6 +58,7 @@ void updateDisplay() {
   leds[kNumLEDs - minute_led - 1] = CRGB::Green;
 
   unsigned int hour_led = now.hour() * kNumLEDs / 12;
+  hour_led += (kNumLEDs * now.minute()) / (12 * 60); // Advance within the hour based on the minute
   leds[kNumLEDs - hour_led - 1] = CRGB::Blue;
 
   FastLED.show();
