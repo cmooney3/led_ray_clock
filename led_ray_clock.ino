@@ -46,7 +46,7 @@ RtcDateTime now;
 void updateTime() {
   Serial.println("Querying RTC for time.");
   now = Rtc.GetDateTime();
-  Serial.print(now.Hour());
+  Serial.print(now.Hour() % 12);
   Serial.print(":");
   Serial.print(now.Minute());
   Serial.print(":");
@@ -61,20 +61,20 @@ void updateDisplay() {
   // First clear out the LEDs and dimly light 12, 3, 6, and 9
   fill_solid(leds, kNumLEDs, CRGB::Black);
   CRGB kMarkerColor = CHSV(0, 0, 16);
-  leds[0] = kMarkerColor;
-  leds[kNumLEDs / 4] = kMarkerColor;
-  leds[kNumLEDs / 2] = kMarkerColor;
-  leds[3 * kNumLEDs / 4] = kMarkerColor;
+  leds[(0 + kClockRotationalOffsetToNoon) % kNumLEDs] = kMarkerColor;
+  leds[(kNumLEDs / 4 + kClockRotationalOffsetToNoon) % kNumLEDs] = kMarkerColor;
+  leds[(kNumLEDs / 2 + kClockRotationalOffsetToNoon) % kNumLEDs] = kMarkerColor;
+  leds[(3 * kNumLEDs / 4 + kClockRotationalOffsetToNoon) % kNumLEDs] = kMarkerColor;
 
   unsigned int second_led = now.Second() * kNumLEDs / 60;
-  leds[(kNumLEDs - second_led - 1 + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Red;
+  leds[(kNumLEDs - second_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Red;
 
   unsigned int minute_led = now.Minute() * kNumLEDs / 60;
-  leds[(kNumLEDs - minute_led - 1 + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Green;
+  leds[(kNumLEDs - minute_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Green;
 
   unsigned int hour_led = (now.Hour() % 12) * kNumLEDs / 12;
   hour_led += (kNumLEDs * now.Minute()) / (12 * 60); // Advance within the hour based on the minute
-  leds[(kNumLEDs - hour_led - 1 + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Blue;
+  leds[(kNumLEDs - hour_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Blue;
 
   FastLED.show();
 }
