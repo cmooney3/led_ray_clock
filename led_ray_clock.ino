@@ -13,9 +13,13 @@ static constexpr uint8_t kButtonPin = 0;
 static constexpr uint8_t kLEDPin = 13;
 
 // LED details
+constexpr uint16_t kBrightness = 255;
 constexpr uint16_t kNumLEDs = 36; // How Many LEDs are connected
 #define LED_TYPE WS2812B
 CRGB leds[kNumLEDs];
+
+// How far Noon is from the start of the LED strip (number of LEDs)
+static constexpr uint8_t kClockRotationalOffsetToNoon = 8;
 
 void setupFastLED() {
   // Configure FastLED for the main RGB LED strip that this unit controls
@@ -23,7 +27,7 @@ void setupFastLED() {
 
   // Set all the LEDs to black (aka off) so that the LEDs don't flash random colors on boot
   fill_solid(leds, kNumLEDs, CRGB::Black);
-  FastLED.setBrightness(128);
+  FastLED.setBrightness(kBrightness);
   FastLED.show();
 }
 
@@ -38,7 +42,7 @@ void setupRTC() {
   }
 }
 
-RtcDateTime now(2019, 1, 1, 11, 20, 40);
+RtcDateTime now;
 void updateTime() {
   Serial.println("Querying RTC for time.");
   now = Rtc.GetDateTime();
@@ -51,20 +55,26 @@ void updateTime() {
 Task taskUpdateTime(TASK_SECOND, TASK_FOREVER, &updateTime);
 
 void updateDisplay() {
+  // Update the display with the current time
   Serial.println("Displaying time.");
 
-  // Update the display with the current time
+  // First clear out the LEDs and dimly light 12, 3, 6, and 9
   fill_solid(leds, kNumLEDs, CRGB::Black);
+  CRGB kMarkerColor = CHSV(0, 0, 16);
+  leds[0] = kMarkerColor;
+  leds[kNumLEDs / 4] = kMarkerColor;
+  leds[kNumLEDs / 2] = kMarkerColor;
+  leds[3 * kNumLEDs / 4] = kMarkerColor;
 
   unsigned int second_led = now.Second() * kNumLEDs / 60;
-  leds[kNumLEDs - second_led - 1] = CRGB::Red;
+  leds[(kNumLEDs - second_led - 1 + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Red;
 
   unsigned int minute_led = now.Minute() * kNumLEDs / 60;
-  leds[kNumLEDs - minute_led - 1] = CRGB::Green;
+  leds[(kNumLEDs - minute_led - 1 + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Green;
 
   unsigned int hour_led = (now.Hour() % 12) * kNumLEDs / 12;
   hour_led += (kNumLEDs * now.Minute()) / (12 * 60); // Advance within the hour based on the minute
-  leds[kNumLEDs - hour_led - 1] = CRGB::Blue;
+  leds[(kNumLEDs - hour_led - 1 + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Blue;
 
   FastLED.show();
 }
