@@ -40,6 +40,12 @@ void setupRTC() {
     Serial.println("RTC lost confidence in the DateTime!");
     Rtc.SetDateTime(compiled);
   }
+
+  if (!Rtc.GetIsRunning()) {
+      Rtc.SetIsRunning(true);
+  }
+  Rtc.Enable32kHzPin(false);
+  Rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
 }
 
 RtcDateTime now;
@@ -81,22 +87,23 @@ void updateDisplay() {
 Task taskUpdateDisplay(TASK_SECOND, TASK_FOREVER, &updateDisplay);
 
 void fastForwardTime() {
-//  static int pressed_duration = 0;
-//
-//  // If the button is pressed down advance time by increasingly larger chunks
-//  if (!digitalRead(kButtonPin)) {
-//    pressed_duration++;
-//    if (pressed_duration < 60) {
-//      now = now + TimeSpan(1);
-//    } else if (pressed_duration < 7 * 60 + 60) {
-//      now = now + TimeSpan(7);
-//    } else {
-//      now = now + TimeSpan(70);
-//    }
-//    updateDisplay();
-//  } else {
-//    pressed_duration = 0;
-//  }
+  static int pressed_duration = 0;
+
+  // If the button is pressed down advance time by increasingly larger chunks
+  if (!digitalRead(kButtonPin)) {
+    pressed_duration++;
+    if (pressed_duration < 60) {
+      now = now + 1;
+    } else if (pressed_duration < 7 * 60 + 60) {
+      now = now + 7;
+    } else {
+      now = now + 70;
+    }
+    Rtc.SetDateTime(now);
+    updateDisplay();
+  } else {
+    pressed_duration = 0;
+  }
 }
 Task taskFastForwardTime(TASK_SECOND / 100, TASK_FOREVER, &fastForwardTime);
 
