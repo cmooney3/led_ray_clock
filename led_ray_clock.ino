@@ -3,18 +3,13 @@
 #define DATA_PIN 0
 CRGB leds[NUM_LEDS];
 
-#include <Wire.h>
-#include "DS3231.h"
+// All the code for interfacing with the RTC (DS3231)
+#include "rtc.h"
 
 #define BAUD_RATE 115200
 
-#define CLOCK_MODE_12H true
-
-// Which gpios are the two status LEDs connected to
+// Which gpio is connected to the basic LED on the PCB (not RGB)
 constexpr int kBlinkyLEDPin = 24;
-
-// Instantiate an object to control and read from the RTC over I2C
-//DS3231 rtc;
 
 void setup() {
   Serial.begin(BAUD_RATE);
@@ -22,45 +17,23 @@ void setup() {
   pinMode(kBlinkyLEDPin, OUTPUT);
   digitalWrite(kBlinkyLEDPin, LOW);
 
+  rtc_setup();
+
   LEDS.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
   LEDS.setBrightness(64);
-
-//  Wire.begin();
-//
-//  rtc.setClockMode(CLOCK_MODE_12H);
-//  rtc.setSecond(0);
-//  rtc.setHour(9);
-//  rtc.setMinute(21);
 }
 
-//void blink(int ledPin) {
-//  digitalWrite(ledPin, HIGH);
-//  delay(250);
-//  digitalWrite(ledPin, LOW);
-//  delay(100);
-//}
-//
-//void displayValue(int val, int ledPin) {
-//  for (int i = 0; i < val; i++) {
-//    blink(ledPin);
-//  }
-//}
-
 void loop() {
-  //bool h12, pm;
-  //uint8_t hour = rtc.getHour(h12, pm);
-  //displayValue(hour, kGreenLEDPin);
-  //displayValue(rtc.getMinute(), kOrangeLEDPin);
-
-
   delay(500);
-  Serial.println("test...");
+  Serial.println("test one...");
+  Serial.println(rtc_getTimeString());
   digitalWrite(kBlinkyLEDPin, LOW);
   fill_solid(leds, NUM_LEDS, CRGB(255, 128, 0));
   FastLED.show();
 
   delay(500);
-  Serial.println("test...");
+  Serial.println("test two...");
+  Serial.println(rtc_getTimeString());
   digitalWrite(kBlinkyLEDPin, HIGH);
   fill_solid(leds, NUM_LEDS, CRGB(0, 128, 255));
   FastLED.show();
