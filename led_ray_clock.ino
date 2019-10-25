@@ -1,7 +1,5 @@
-#include <FastLED.h>
-#define NUM_LEDS 6
-#define DATA_PIN 0
-CRGB leds[NUM_LEDS];
+// All the code for interacing with the main RGB LED strip
+#include "leds.h"
 
 // All the code for interfacing with the RTC (DS3231)
 #include "rtc.h"
@@ -18,23 +16,20 @@ void setup() {
   digitalWrite(kBlinkyLEDPin, LOW);
 
   rtc_setup();
-
-  LEDS.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
-  LEDS.setBrightness(64);
+  leds_setup();
 }
 
 void loop() {
   delay(500);
   Serial.println("test one...");
   Serial.println(rtc_getTimeString());
+  leds_setSolid(CRGB(255, 128, 0));
   digitalWrite(kBlinkyLEDPin, LOW);
-  fill_solid(leds, NUM_LEDS, CRGB(255, 128, 0));
-  FastLED.show();
 
   delay(500);
   Serial.println("test two...");
   Serial.println(rtc_getTimeString());
   digitalWrite(kBlinkyLEDPin, HIGH);
-  fill_solid(leds, NUM_LEDS, CRGB(0, 128, 255));
+  leds_setSolid(CRGB(0, 128, 255));
   FastLED.show();
 }

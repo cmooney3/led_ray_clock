@@ -1,9 +1,15 @@
+// This header files contains all the RTC interfaces for the LED clock code
+
 #include <stdio.h>
 #include <Wire.h>
 #include <RtcDS3231.h>
 
 #define CLOCK_MODE_12H true
 #define TIME_STRING_MAX_LENGTH 128
+// Note: The RTC chip is connected over i2c to the default i2c pins on the
+// atmega16 so that the TwoWire library just sets those up automatically.
+// That's why there's no need to specify which pins it's on, like you might
+// expect.
 
 static RtcDS3231<TwoWire> Rtc(Wire);
 
