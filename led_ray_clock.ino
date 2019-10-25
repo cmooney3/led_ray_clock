@@ -6,6 +6,8 @@ CRGB leds[NUM_LEDS];
 #include <Wire.h>
 #include "DS3231.h"
 
+#define BAUD_RATE 115200
+
 #define CLOCK_MODE_12H true
 
 // Which gpios are the two status LEDs connected to
@@ -15,6 +17,8 @@ constexpr int kBlinkyLEDPin = 24;
 //DS3231 rtc;
 
 void setup() {
+  Serial.begin(BAUD_RATE);
+
   pinMode(kBlinkyLEDPin, OUTPUT);
   digitalWrite(kBlinkyLEDPin, LOW);
 
@@ -50,11 +54,13 @@ void loop() {
 
 
   delay(500);
+  Serial.println("test...");
   digitalWrite(kBlinkyLEDPin, LOW);
   fill_solid(leds, NUM_LEDS, CRGB(255, 128, 0));
   FastLED.show();
 
   delay(500);
+  Serial.println("test...");
   digitalWrite(kBlinkyLEDPin, HIGH);
   fill_solid(leds, NUM_LEDS, CRGB(0, 128, 255));
   FastLED.show();
