@@ -1,3 +1,8 @@
+#include <FastLED.h>
+#define NUM_LEDS 6
+#define DATA_PIN 0
+CRGB leds[NUM_LEDS];
+
 #include <Wire.h>
 #include "DS3231.h"
 
@@ -12,6 +17,9 @@ constexpr int kBlinkyLEDPin = 24;
 void setup() {
   pinMode(kBlinkyLEDPin, OUTPUT);
   digitalWrite(kBlinkyLEDPin, LOW);
+
+  LEDS.addLeds<WS2812B, DATA_PIN, GRB>(leds, NUM_LEDS);
+  LEDS.setBrightness(64);
 
 //  Wire.begin();
 //
@@ -41,8 +49,13 @@ void loop() {
   //displayValue(rtc.getMinute(), kOrangeLEDPin);
 
 
-  delay(2000);
+  delay(500);
   digitalWrite(kBlinkyLEDPin, LOW);
-  delay(2000);
+  fill_solid(leds, NUM_LEDS, CRGB(255, 128, 0));
+  FastLED.show();
+
+  delay(500);
   digitalWrite(kBlinkyLEDPin, HIGH);
+  fill_solid(leds, NUM_LEDS, CRGB(0, 128, 255));
+  FastLED.show();
 }
