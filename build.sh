@@ -16,7 +16,7 @@ ACTION="--verify"
 OUTPUT_BIN="${BUILD_DIR}/${INO}.bin"
 
 # Where ESPTOOL is, use find to not need to set it all up
-ESPTOOL="$(find ${HOME}/.arduino15/ -name esptool.py -type f)"
+ESPTOOL="/home/cmooney/installs/esptool/esptool.py"
 
 # Color codes to allow us to make the output prettier and easier to read
 RED='\033[0;31m'

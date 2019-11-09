@@ -13,7 +13,7 @@ static constexpr uint8_t kButtonPin = 0;
 static constexpr uint8_t kLEDPin = 13;
 
 // LED details
-constexpr uint16_t kBrightness = 255;
+constexpr uint16_t kBrightness = 128;
 constexpr uint16_t kNumLEDs = 36; // How Many LEDs are connected
 #define LED_TYPE WS2812B
 CRGB leds[kNumLEDs];
@@ -72,8 +72,8 @@ void updateDisplay() {
   leds[(kNumLEDs / 2 + kClockRotationalOffsetToNoon) % kNumLEDs] = kMarkerColor;
   leds[(3 * kNumLEDs / 4 + kClockRotationalOffsetToNoon) % kNumLEDs] = kMarkerColor;
 
-  unsigned int second_led = now.Second() * kNumLEDs / 60;
-  leds[(kNumLEDs - second_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Red;
+//  unsigned int second_led = now.Second() * kNumLEDs / 60;
+//  leds[(kNumLEDs - second_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Red;
 
   unsigned int minute_led = now.Minute() * kNumLEDs / 60;
   leds[(kNumLEDs - minute_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Green;
