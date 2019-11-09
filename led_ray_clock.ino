@@ -1,3 +1,6 @@
+#include <TaskScheduler.h>
+Scheduler scheduler;
+
 #include "LEDController.h"
 LEDController *leds;
 
@@ -9,6 +12,38 @@ Clock* clock;
 // Which gpio is connected to the basic LED on the PCB (not RGB)
 constexpr int kBlinkyLEDPin = 24;
 
+// Task for updating the time
+void updateTime() {
+  Serial.println(clock->getTimeString());
+}
+Task taskUpdateTime(TASK_SECOND, TASK_FOREVER, &updateTime);
+
+// Task to blink the power indicator
+void updatePowerIndicator() {
+  static bool powerIndicatorState = false;
+  powerIndicatorState = !powerIndicatorState;
+  digitalWrite(kBlinkyLEDPin, powerIndicatorState);
+}
+Task taskUpdatePowerIndicator(TASK_SECOND / 4, TASK_FOREVER, &updatePowerIndicator);
+
+// Task to display something on the RGB LEDs.  In this case, it just rainbow fades
+void updateMainLEDs() {
+  static uint8_t hue = 0;
+  leds->setSolid(CHSV(hue++, 200, 128));
+}
+Task taskUpdateMainLEDs(TASK_SECOND / 32, TASK_FOREVER, &updateMainLEDs);
+
+void setupSchedulerTasks() {
+  scheduler.addTask(taskUpdateTime);
+  taskUpdateTime.enable();
+
+  scheduler.addTask(taskUpdatePowerIndicator);
+  taskUpdatePowerIndicator.enable();
+
+  scheduler.addTask(taskUpdateMainLEDs);
+  taskUpdateMainLEDs.enable();
+}
+
 void setup() {
   Serial.begin(BAUD_RATE);
   Serial.println("Booting!");
@@ -18,18 +53,10 @@ void setup() {
 
   clock = new Clock();
   leds = new LEDController();
+
+  setupSchedulerTasks();
 }
 
 void loop() {
-  delay(500);
-  Serial.println("test one...");
-  Serial.println(clock->getTimeString());
-  leds->setSolid(CRGB(255, 128, 0));
-  digitalWrite(kBlinkyLEDPin, LOW);
-
-  delay(500);
-  Serial.println("test two...");
-  Serial.println(clock->getTimeString());
-  leds->setSolid(CRGB(0, 128, 255));
-  digitalWrite(kBlinkyLEDPin, HIGH);
+  scheduler.execute();
 }
