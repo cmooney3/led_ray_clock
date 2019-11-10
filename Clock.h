@@ -33,11 +33,10 @@ public:
     return _rtc->GetDateTime();
   }
 
-  char* getTimeString() {
-    RtcDateTime now = getTime();
+  char* getTimeString(const RtcDateTime& time) {
     sprintf(_timeString,
             "%d:%02d:%02d",
-            now.Hour() % 12, now.Minute(), now.Second());
+            time.Hour() % 12, time.Minute(), time.Second());
     return _timeString; 
   }
 

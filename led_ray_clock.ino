@@ -13,12 +13,24 @@ Clock* clock;
 constexpr int kBlinkyLEDPin = 24;
 
 // Task for updating the time
+// This task runs every second and queries the current time from the RTC module
+// and updates the static global value "now" for use in the other tasks.  Since
+// this runs and updates that value the other taks never need to worry about
+// when/how/where to get the time.  You can simply assume that "now" represents
+// the current time.
+static RtcDateTime now;
 void updateTime() {
-  Serial.println(clock->getTimeString());
+  now = clock->getTime();
+  Serial.println(clock->getTimeString(now));
 }
 Task taskUpdateTime(TASK_SECOND, TASK_FOREVER, &updateTime);
 
 // Task to blink the power indicator
+// This task simply blinks the power indicator LED. This is a standard/basic
+// LED that's soldered directly onto the PCB and connected to a GPIO on the mcu.
+// This is *not* with the RGB LEDs that make up the real clock itself.  This
+// just blinks to let you know that everything is powered up and the scheduler
+// is running/etc.
 void updatePowerIndicator() {
   static bool powerIndicatorState = false;
   powerIndicatorState = !powerIndicatorState;
@@ -26,13 +38,16 @@ void updatePowerIndicator() {
 }
 Task taskUpdatePowerIndicator(TASK_SECOND / 4, TASK_FOREVER, &updatePowerIndicator);
 
-// Task to display something on the RGB LEDs.  In this case, it just rainbow fades
+// Task to display something on the RGB LEDs.
+// In this case, it just rainbow fades, but in the future this should actually
+// render frames of the clock animation.
 void updateMainLEDs() {
   static uint8_t hue = 0;
   leds->setSolid(CHSV(hue++, 200, 128));
 }
 Task taskUpdateMainLEDs(TASK_SECOND / 32, TASK_FOREVER, &updateMainLEDs);
 
+// Set up the tasks defined above and get the scheduler ready to run.
 void setupSchedulerTasks() {
   scheduler.addTask(taskUpdateTime);
   taskUpdateTime.enable();
