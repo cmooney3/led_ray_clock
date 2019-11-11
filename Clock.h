@@ -4,7 +4,7 @@
 #include <Wire.h>
 #include <RtcDS3231.h>
 
-#define TIME_STRING_MAX_LENGTH 128
+#define TIME_STRING_MAX_LENGTH 64
 // Note: The RTC chip is connected over i2c to the default i2c pins on the
 // atmega16 so that the TwoWire library just sets those up automatically.
 // That's why there's no need to specify which pins it's on, like you might
@@ -28,6 +28,9 @@ public:
     _rtc->SetSquareWavePin(DS3231SquareWavePin_ModeNone);
   }
 
+  ~Clock() {
+    delete _rtc;
+  }
 
   RtcDateTime getTime() {
     return _rtc->GetDateTime();

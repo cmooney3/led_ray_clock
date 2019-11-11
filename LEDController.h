@@ -3,18 +3,24 @@
 
 // Configure the LED strip with these constants
 constexpr int kLEDPin = 0;
-constexpr int kNumLEDs = 6;
+constexpr int kNumLEDs = 36;
 
 class LEDController {
 public:
   LEDController() {
-    FastLED.addLeds<WS2812B, kLEDPin, GRB>(leds, kNumLEDs);
-    FastLED.setBrightness(64);
+    FastLED.addLeds<WS2812B, kLEDPin, GRB>(_leds, kNumLEDs);
+    FastLED.setBrightness(10);
   }
 
   // Set the whole LED strip to be a solid color and display it.
   void setSolid(CRGB color) {
-    fill_solid(leds, kNumLEDs, color);
+    fill_solid(_leds, kNumLEDs, color);
+    show();
+  }
+
+  // Fill in a rainbow on the LED strip
+  void setRainbow(uint8_t offset) {
+    fill_rainbow(_leds, kNumLEDs, offset, 0xFF / kNumLEDs);
     show();
   }
 
@@ -23,6 +29,5 @@ public:
     FastLED.show();
   }
 
-private:
-  CRGB leds[kNumLEDs];
+  CRGB _leds[kNumLEDs];
 };

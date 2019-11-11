@@ -42,10 +42,11 @@ Task taskUpdatePowerIndicator(TASK_SECOND / 4, TASK_FOREVER, &updatePowerIndicat
 // In this case, it just rainbow fades, but in the future this should actually
 // render frames of the clock animation.
 void updateMainLEDs() {
-  static uint8_t hue = 0;
-  leds->setSolid(CHSV(hue++, 200, 128));
+  static uint8_t offset = 0;
+  offset += 8;
+  leds->setRainbow(offset);
 }
-Task taskUpdateMainLEDs(TASK_SECOND / 32, TASK_FOREVER, &updateMainLEDs);
+Task taskUpdateMainLEDs(TASK_SECOND / 20, TASK_FOREVER, &updateMainLEDs);
 
 // Set up the tasks defined above and get the scheduler ready to run.
 void setupSchedulerTasks() {
