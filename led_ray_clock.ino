@@ -2,10 +2,10 @@
 Scheduler scheduler;
 
 #include "LEDController.h"
-LEDController *leds;
+LEDController leds;
 
 #include "Clock.h"
-Clock* clock;
+Clock clock;
 
 #define BAUD_RATE 115200
 
@@ -20,8 +20,8 @@ constexpr int kBlinkyLEDPin = 24;
 // the current time.
 static RtcDateTime now;
 void updateTime() {
-  now = clock->getTime();
-  Serial.println(clock->getTimeString(now));
+  now = clock.getTime();
+  Serial.println(clock.getTimeString(now));
 }
 Task taskUpdateTime(TASK_SECOND, TASK_FOREVER, &updateTime);
 
@@ -44,7 +44,7 @@ Task taskUpdatePowerIndicator(TASK_SECOND / 4, TASK_FOREVER, &updatePowerIndicat
 void updateMainLEDs() {
   static uint8_t offset = 0;
   offset += 8;
-  leds->setRainbow(offset);
+  leds.setRainbow(offset);
 }
 Task taskUpdateMainLEDs(TASK_SECOND / 20, TASK_FOREVER, &updateMainLEDs);
 
@@ -67,8 +67,8 @@ void setup() {
   pinMode(kBlinkyLEDPin, OUTPUT);
   digitalWrite(kBlinkyLEDPin, LOW);
 
-  clock = new Clock();
-  leds = new LEDController();
+  clock.setup();
+  leds.setup();
 
   setupSchedulerTasks();
 }

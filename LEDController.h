@@ -7,7 +7,7 @@ constexpr int kNumLEDs = 36;
 
 class LEDController {
 public:
-  LEDController() {
+  void setup() {
     FastLED.addLeds<WS2812B, kLEDPin, GRB>(_leds, kNumLEDs);
     FastLED.setBrightness(10);
   }

@@ -12,28 +12,25 @@
 
 class Clock {
 public:
-  Clock() {
-    _rtc = new RtcDS3231<TwoWire>(Wire);
-    _rtc->Begin();
+  Clock() : _rtc(Wire) {}
+
+  void setup() {
+    _rtc.Begin();
   
     RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
-    if (!_rtc->IsDateTimeValid()) {
-      _rtc->SetDateTime(compiled);
+    if (!_rtc.IsDateTimeValid()) {
+      _rtc.SetDateTime(compiled);
     }
   
-    if (!_rtc->GetIsRunning()) {
-        _rtc->SetIsRunning(true);
+    if (!_rtc.GetIsRunning()) {
+        _rtc.SetIsRunning(true);
     }
-    _rtc->Enable32kHzPin(false);
-    _rtc->SetSquareWavePin(DS3231SquareWavePin_ModeNone);
-  }
-
-  ~Clock() {
-    delete _rtc;
+    _rtc.Enable32kHzPin(false);
+    _rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
   }
 
   RtcDateTime getTime() {
-    return _rtc->GetDateTime();
+    return _rtc.GetDateTime();
   }
 
   char* getTimeString(const RtcDateTime& time) {
@@ -44,6 +41,6 @@ public:
   }
 
 private:
-  RtcDS3231<TwoWire>* _rtc;
+  RtcDS3231<TwoWire> _rtc;
   char _timeString[TIME_STRING_MAX_LENGTH];
 };
