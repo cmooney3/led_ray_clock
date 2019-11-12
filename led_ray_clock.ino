@@ -10,7 +10,7 @@ Clock clock;
 #define BAUD_RATE 115200
 
 // Which gpio is connected to the basic LED on the PCB (not RGB)
-constexpr int kBlinkyLEDPin = 24;
+constexpr uint8_t kBlinkyLEDPin = 24;
 
 // Task for updating the time
 // This task runs every second and queries the current time from the RTC module

@@ -5,8 +5,8 @@
 #include <RtcDS3231.h>
 
 // Configure the LED strip with these constants
-constexpr int kLEDPin = 0;
-constexpr int kNumLEDs = 36;
+constexpr uint8_t kLEDPin = 0;
+constexpr uint8_t kNumLEDs = 36;
 
 // How many notches "off" from noon is LED 0
 constexpr uint8_t kClockRotationalOffsetToNoon = 1;
@@ -39,18 +39,11 @@ public:
     // The color used to mark the "poles"
     static const CRGB kMarkerColor = CRGB::White;
 
-    // Precompute positions of the "poles" at noon, 3, 6, and 9
-    constexpr static uint8_t kPoleIndicies[4] = {
-      0,                 // Noon
-      kNumLEDs / 4,      // Three
-      kNumLEDs / 2,      // Six
-      (3 * kNumLEDs) / 4 // Nine
-    };
-
     // Set each Pole LED to the pole color
-    for (uint8_t pole = 0; pole < sizeof(kPoleIndicies); pole++) {
-      setSingleLEDColor(kPoleIndicies[pole], kMarkerColor);
-    }
+    setSingleLEDColor(0, kMarkerColor);                  // Noon
+    setSingleLEDColor(kNumLEDs / 4, kMarkerColor);       // Three
+    setSingleLEDColor(kNumLEDs / 2, kMarkerColor);       // Six
+    setSingleLEDColor((3 * kNumLEDs) / 2, kMarkerColor); // Nine
   }
 
   // Display a given time on the clock face.
