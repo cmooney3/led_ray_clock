@@ -48,15 +48,8 @@ void updateMainLEDs() {
   // Put in a pole marker at noon, 3, 6, and 9
   leds.setPoleMarkers();
 
-//  unsigned int second_led = now.Second() * kNumLEDs / 60;
-//  leds[(kNumLEDs - second_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Red;
-//
-//  unsigned int minute_led = now.Minute() * kNumLEDs / 60;
-//  leds[(kNumLEDs - minute_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Green;
-//
-//  unsigned int hour_led = (now.Hour() % 12) * kNumLEDs / 12;
-//  hour_led += (kNumLEDs * now.Minute()) / (12 * 60); // Advance within the hour based on the minute
-//  leds[(kNumLEDs - hour_led + kClockRotationalOffsetToNoon) % kNumLEDs] = CRGB::Blue;
+  // Display the time on top
+  leds.displayTime(now);
 
   leds.show();
 }
