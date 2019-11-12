@@ -4,7 +4,8 @@
 #include <Wire.h>
 #include <RtcDS3231.h>
 
-#define TIME_STRING_MAX_LENGTH 64
+constexpr uint8_t kTimeStringMaxLength = 32;
+
 // Note: The RTC chip is connected over i2c to the default i2c pins on the
 // atmega16 so that the TwoWire library just sets those up automatically.
 // That's why there's no need to specify which pins it's on, like you might
@@ -33,14 +34,16 @@ public:
     return _rtc.GetDateTime();
   }
 
-  char* getTimeString(const RtcDateTime& time) {
-    sprintf(_timeString,
-            "%d:%02d:%02d",
+  const char* getTimeString(const RtcDateTime& time) {
+    // Note: sprintf_P() allows you to store the format string in progmem
+    // to save a little bit of memory
+    sprintf_P(_timeString,
+            PSTR("%d:%02d:%02d"),
             time.Hour() % 12, time.Minute(), time.Second());
     return _timeString; 
   }
 
 private:
   RtcDS3231<TwoWire> _rtc;
-  char _timeString[TIME_STRING_MAX_LENGTH];
+  char _timeString[kTimeStringMaxLength];
 };
