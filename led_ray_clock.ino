@@ -12,6 +12,19 @@ Clock clock;
 // Which gpio is connected to the basic LED on the PCB (not RGB)
 constexpr uint8_t kBlinkyLEDPin = 24;
 
+// Which gpio's are connected to the buttons and some memory to store their values
+constexpr uint8_t kButton1Pin = 28;
+constexpr uint8_t kButton2Pin = 29;
+constexpr uint8_t kButton3Pin = 30;
+constexpr uint8_t kButton4Pin = 31;
+constexpr bool kButtonPressed = false;
+constexpr bool kButtonReleased = false;
+bool button1State = kButtonReleased;
+//bool button2State = kButtonReleased;
+//bool button3State = kButtonReleased;
+//bool button4State = kButtonReleased;
+
+
 // Task for updating the time
 // This task runs every second and queries the current time from the RTC module
 // and updates the static global value "now" for use in the other tasks.  Since
@@ -55,6 +68,26 @@ void updateMainLEDs() {
 }
 Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 
+// Task to poll the state of the buttons and run any button-press handlers
+void setupButtonGPIOs() {
+  pinMode(kButton1Pin, INPUT_PULLUP);
+  pinMode(kButton2Pin, INPUT_PULLUP);
+  pinMode(kButton3Pin, INPUT_PULLUP);
+  pinMode(kButton4Pin, INPUT_PULLUP);
+}
+void checkButtonStates() {
+  bool newButton1State = digitalRead(kButton1Pin);
+  if (newButton1State != button1State) {
+    if (newButton1State == kButtonPressed) {
+      Serial.println(F("Button 1 pressed"));
+    } else {
+      Serial.println(F("Button 1 released"));
+    }
+  }
+  button1State = newButton1State;
+}
+Task taskCheckButtonStates(TASK_MILLISECOND * 50, TASK_FOREVER, &checkButtonStates);
+
 // Set up the tasks defined above and get the scheduler ready to run.
 void setupSchedulerTasks() {
   scheduler.addTask(taskUpdateTime);
@@ -65,6 +98,9 @@ void setupSchedulerTasks() {
 
   scheduler.addTask(taskUpdateMainLEDs);
   taskUpdateMainLEDs.enable();
+
+  scheduler.addTask(taskCheckButtonStates);
+  taskCheckButtonStates.enable();
 }
 
 void setup() {
@@ -73,6 +109,8 @@ void setup() {
 
   pinMode(kBlinkyLEDPin, OUTPUT);
   digitalWrite(kBlinkyLEDPin, LOW);
+
+  setupButtonGPIOs();
 
   clock.setup();
   leds.setup();
