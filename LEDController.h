@@ -57,7 +57,7 @@ public:
 
     uint16_t hour_led = (time.Hour() % 12) * kNumLEDs / 12;
     hour_led += (kNumLEDs * time.Minute()) / (12 * 60); // Advance within the hour based on the minute
-    setSingleLEDColor(hour_led, CRGB::Green);
+    setSingleLEDColor(hour_led, CRGB::Blue);
   }
 
   // Latch any new values into the LEDs
