@@ -1,14 +1,23 @@
 #include <TaskScheduler.h>
-Scheduler scheduler;
+static Scheduler scheduler;
 
 #include "LEDController.h"
-LEDController leds;
-
-#include "ButtonHandler.h"
-ButtonHandler buttons;
+static LEDController leds;
 
 #include "Clock.h"
-Clock clock;
+static Clock clock;
+
+#include "Button.h"
+constexpr uint8_t kNumButtons = 2;
+// Button pin mappings on the PCB
+constexpr uint8_t kButton1Pin = 28;
+constexpr uint8_t kButton2Pin = 29;
+constexpr uint8_t kButton3Pin = 30;
+constexpr uint8_t kButton4Pin = 31;
+// Functional button number mappings
+enum {SET_TIME_BUTTON = 0,
+      BRIGHTNESS_BUTTON = 1};
+static Button buttons[kNumButtons];
 
 #define BAUD_RATE 115200
 
@@ -59,10 +68,18 @@ void updateMainLEDs() {
 Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 
 // Task to poll the state of the buttons and run any button-press handlers
-void checkButtonStates() {
-  buttons.checkStates();
+void setTimeButtonCallback() {
+  Serial.println(F("Button 1 Pressed!"));
 }
-Task taskCheckButtonStates(TASK_MILLISECOND * 50, TASK_FOREVER, &checkButtonStates);
+void brightnessButtonCallback() {
+  Serial.println(F("Button 2 Pressed!"));
+}
+void checkButtonStateAndRunCallbacks() {
+  for (uint8_t i = 0; i < kNumButtons; i++) {
+    buttons[i].checkStateAndRunCallbacks();
+  }
+}
+Task taskCheckButtonStates(TASK_MILLISECOND * 50, TASK_FOREVER, &checkButtonStateAndRunCallbacks);
 
 // Set up the tasks defined above and get the scheduler ready to run.
 void setupSchedulerTasks() {
@@ -88,7 +105,9 @@ void setup() {
 
   clock.setup();
   leds.setup();
-  buttons.setup();
+
+  buttons[SET_TIME_BUTTON].setup(kButton1Pin, &setTimeButtonCallback);
+  buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonCallback);
 
   setupSchedulerTasks();
 }
