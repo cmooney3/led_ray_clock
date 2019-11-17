@@ -19,11 +19,11 @@ public:
     _state = getState();
   }
 
-  void checkStateAndRunCallbacks() {
+  bool checkStateAndRunCallbacks() {
     // If this button hasn't been setup and/or doesn't have a callback then
-    // there's no reason to do anything here.
+    // there's no reason to do anything here.  Return "false" to indicate a problem
     if (_pin == kNoPinSetupYet || _onPress == nullptr) {
-      return;
+      return false;
     }
 
     // Get the current state of the button, and run a callback if the state changed
@@ -40,6 +40,7 @@ public:
 
     // Update the state with the newly collected state
     _state = newState;
+    return true;
   }
 
 private:

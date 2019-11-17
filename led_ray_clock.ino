@@ -8,7 +8,6 @@ static LEDController leds;
 static Clock clock;
 
 #include "Button.h"
-constexpr uint8_t kNumButtons = 2;
 // Button pin mappings on the PCB
 constexpr uint8_t kButton1Pin = 28;
 constexpr uint8_t kButton2Pin = 29;
@@ -16,8 +15,11 @@ constexpr uint8_t kButton3Pin = 30;
 constexpr uint8_t kButton4Pin = 31;
 // Functional button number mappings
 enum {SET_TIME_BUTTON = 0,
-      BRIGHTNESS_BUTTON = 1};
-static Button buttons[kNumButtons];
+      BRIGHTNESS_BUTTON = 1,
+      UNUSED_BUTTON_ONE = 2,
+      UNUSED_BUTTON_TWO = 3,
+      NUM_BUTTONS = 4};
+static Button buttons[NUM_BUTTONS];
 
 #define BAUD_RATE 115200
 
@@ -69,14 +71,25 @@ Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 
 // Task to poll the state of the buttons and run any button-press handlers
 void setTimeButtonCallback() {
-  Serial.println(F("Button 1 Pressed!"));
+  Serial.println(F("Set Time Button Pressed!"));
 }
 void brightnessButtonCallback() {
-  Serial.println(F("Button 2 Pressed!"));
+  Serial.println(F("Brightness Button Pressed!"));
+}
+void unusedButtonOneCallback () {
+  Serial.println(F("Unused Button #1 Pressed!"));
+}
+void unusedButtonTwoCallback () {
+  Serial.println(F("Unused Button #2 Pressed!"));
 }
 void checkButtonStateAndRunCallbacks() {
-  for (uint8_t i = 0; i < kNumButtons; i++) {
-    buttons[i].checkStateAndRunCallbacks();
+  for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+    bool success = buttons[i].checkStateAndRunCallbacks();
+    if (!success) {
+      Serial.print(F("Error: buttons["));
+      Serial.print(i);
+      Serial.println(F("] is not set up correctly"));
+    }
   }
 }
 Task taskCheckButtonStates(TASK_MILLISECOND * 50, TASK_FOREVER, &checkButtonStateAndRunCallbacks);
@@ -108,6 +121,8 @@ void setup() {
 
   buttons[SET_TIME_BUTTON].setup(kButton1Pin, &setTimeButtonCallback);
   buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonCallback);
+  buttons[UNUSED_BUTTON_ONE].setup(kButton3Pin, &unusedButtonOneCallback);
+  buttons[UNUSED_BUTTON_TWO].setup(kButton4Pin, &unusedButtonTwoCallback);
 
   setupSchedulerTasks();
 }
