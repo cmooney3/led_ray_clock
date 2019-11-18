@@ -4,7 +4,7 @@
 #include <Wire.h>
 #include <RtcDS3231.h>
 
-constexpr uint8_t kTimeStringMaxLength = 32;
+constexpr uint8_t kTimeStringMaxLength = 60;
 
 // Note: The RTC chip is connected over i2c to the default i2c pins on the
 // atmega16 so that the TwoWire library just sets those up automatically.
