@@ -22,6 +22,11 @@ enum {SET_TIME_BUTTON = 0,
       NUM_BUTTONS = 4};
 static Button buttons[NUM_BUTTONS];
 
+// Brightness levels
+constexpr uint8_t kBrightnessLevels[] = {10, 64, 128, 192, 255};
+constexpr uint8_t kNumBrightnessLevels = sizeof(kBrightnessLevels);
+static uint8_t brightnessLevel = (kNumBrightnessLevels + 1) / 2;
+
 #define BAUD_RATE 115200
 
 // Which gpio is connected to the basic LED on the PCB (not RGB)
@@ -83,6 +88,11 @@ void setTimeButtonCallback() {
 }
 void brightnessButtonCallback() {
   Serial.println(F("Brightness Button Pressed!"));
+  brightnessLevel = (brightnessLevel + 1) % kNumBrightnessLevels;
+  Serial.print(F("New brightness level: "));
+  Serial.println(brightnessLevel);
+  leds.setBrightness(kBrightnessLevels[brightnessLevel]);
+  leds.show();
 }
 void unusedButtonOneCallback () {
   Serial.println(F("Unused Button #1 Pressed!"));
@@ -125,7 +135,7 @@ void setup() {
   digitalWrite(kBlinkyLEDPin, LOW);
 
   clock.setup();
-  leds.setup();
+  leds.setup(kBrightnessLevels[brightnessLevel]);
 
   buttons[SET_TIME_BUTTON].setup(kButton1Pin, &setTimeButtonCallback);
   buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonCallback);

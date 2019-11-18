@@ -13,9 +13,13 @@ constexpr uint8_t kClockRotationalOffsetToNoon = 1;
 
 class LEDController {
 public:
-  void setup() {
+  void setup(uint8_t brightness) {
     FastLED.addLeds<WS2812B, kLEDPin, GRB>(_leds, kNumLEDs);
-    FastLED.setBrightness(32);
+    setBrightness(brightness);
+  }
+
+  void setBrightness(uint8_t brightness) {
+    FastLED.setBrightness(brightness);
   }
 
   // Set the whole LED strip to be a solid color and display it.
