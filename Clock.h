@@ -1,15 +1,20 @@
 // This header files contains all the RTC interfaces for the LED clock code
 
-#include <stdio.h>
 #include <Wire.h>
 #include <RtcDS3231.h>
-
-constexpr uint8_t kTimeStringMaxLength = 60;
 
 // Note: The RTC chip is connected over i2c to the default i2c pins on the
 // atmega16 so that the TwoWire library just sets those up automatically.
 // That's why there's no need to specify which pins it's on, like you might
 // expect.
+
+
+// I dont know what this is...  Something in the clock library I'm using is
+// clobbering memory after it.  This is a number of bytes I have to allocate
+// after the Clock to provide a buffer for this overrun. It's super hacky,
+// but it seems to work and I can't figure out what this library is doing
+// wrong.
+constexpr uint8_t kUnexplainedMemoryBufferSize = 50;
 
 class Clock {
 public:
@@ -36,5 +41,5 @@ public:
 
 private:
   RtcDS3231<TwoWire> _rtc;
-  char _timeString[kTimeStringMaxLength];
+  uint8_t buffer[kUnexplainedMemoryBufferSize];
 };

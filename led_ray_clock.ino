@@ -4,6 +4,7 @@ static Scheduler scheduler;
 #include "LEDController.h"
 static LEDController leds;
 
+#include <stdio.h>
 #include "Clock.h"
 static Clock clock;
 
@@ -37,8 +38,7 @@ void updateTime() {
   now = clock.getTime();
   // Note: sprintf_P() allows you to store the format string in progmem
   // to save a little bit of memory
-
-  constexpr uint8_t kMaxTimeStringLength = 7;
+  constexpr uint8_t kMaxTimeStringLength = 9; // 00:00:00 is 8 characters + null
   char timeString[kMaxTimeStringLength];
   sprintf_P(timeString,
             PSTR("%d:%02d:%02d"),
