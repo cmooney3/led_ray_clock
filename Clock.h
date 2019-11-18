@@ -34,15 +34,6 @@ public:
     return _rtc.GetDateTime();
   }
 
-  const char* getTimeString(const RtcDateTime& time) {
-    // Note: sprintf_P() allows you to store the format string in progmem
-    // to save a little bit of memory
-    sprintf_P(_timeString,
-            PSTR("%d:%02d:%02d"),
-            time.Hour() % 12, time.Minute(), time.Second());
-    return _timeString; 
-  }
-
 private:
   RtcDS3231<TwoWire> _rtc;
   char _timeString[kTimeStringMaxLength];

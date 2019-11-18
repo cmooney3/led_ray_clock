@@ -35,7 +35,15 @@ constexpr uint8_t kBlinkyLEDPin = 24;
 static RtcDateTime now;
 void updateTime() {
   now = clock.getTime();
-  Serial.println(clock.getTimeString(now));
+  // Note: sprintf_P() allows you to store the format string in progmem
+  // to save a little bit of memory
+
+  constexpr uint8_t kMaxTimeStringLength = 7;
+  char timeString[kMaxTimeStringLength];
+  sprintf_P(timeString,
+            PSTR("%d:%02d:%02d"),
+            now.Hour() % 12, now.Minute(), now.Second());
+  Serial.println(timeString);
 }
 Task taskUpdateTime(TASK_SECOND, TASK_FOREVER, &updateTime);
 
