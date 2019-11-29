@@ -39,6 +39,10 @@ public:
     return _rtc.GetDateTime();
   }
 
+  void setTime(const RtcDateTime& time) {
+    _rtc.SetDateTime(time);
+  }
+
 private:
   RtcDS3231<TwoWire> _rtc;
   uint8_t buffer[kUnexplainedMemoryBufferSize];

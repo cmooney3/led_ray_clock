@@ -83,10 +83,16 @@ void updateMainLEDs() {
 Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 
 // Callback to run when the "set time" button is pressed
-// This adances the time faster than usual to let the user set the time.  The longer
-// they hold it down the faster and faster it advances.
+// This adances the time faster than usual to let the user set the time.
 void setTimeButtonCallback() {
   Serial.println(F("Set Time Button Pressed!"));
+
+  // Move the time forward a bit
+  now = now + 5;
+  clock.setTime(now);
+
+  // Update the main LEDs to show the user the newly selected time
+  updateMainLEDs();
 }
 
 // Callback to run when the "brightness" button is pressed
