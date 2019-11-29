@@ -82,10 +82,16 @@ void updateMainLEDs() {
 }
 Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 
-// Task to poll the state of the buttons and run any button-press handlers
+// Callback to run when the "set time" button is pressed
+// This adances the time faster than usual to let the user set the time.  The longer
+// they hold it down the faster and faster it advances.
 void setTimeButtonCallback() {
   Serial.println(F("Set Time Button Pressed!"));
 }
+
+// Callback to run when the "brightness" button is pressed
+// It cycles through the list of brightness levels, allowing the user to set
+// their preferred level.
 void brightnessButtonCallback() {
   Serial.println(F("Brightness Button Pressed!"));
   brightnessLevel = (brightnessLevel + 1) % kNumBrightnessLevels;
@@ -94,12 +100,20 @@ void brightnessButtonCallback() {
   leds.setBrightness(kBrightnessLevels[brightnessLevel]);
   leds.show();
 }
+
+// Callback to run when the first unused button is pressed
+// It does nothing but print a debug message right now
 void unusedButtonOneCallback () {
   Serial.println(F("Unused Button #1 Pressed!"));
 }
+
+// Callback to run when the second unused button is pressed
+// It does nothing but print a debug message right now
 void unusedButtonTwoCallback () {
   Serial.println(F("Unused Button #2 Pressed!"));
 }
+
+// Periodic task that polls the buttons and runs their callbacks when appropriate
 void checkButtonStateAndRunCallbacks() {
   for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
     bool success = buttons[i].checkStateAndRunCallbacks();
