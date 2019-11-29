@@ -84,7 +84,7 @@ Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 
 // Callback to run when the "set time" button is pressed
 // This adances the time faster than usual to let the user set the time.
-void setTimeButtonCallback() {
+void setTimeButtonOnPressCallback() {
   Serial.println(F("Set Time Button Pressed!"));
 
   // Move the time forward a bit
@@ -98,25 +98,13 @@ void setTimeButtonCallback() {
 // Callback to run when the "brightness" button is pressed
 // It cycles through the list of brightness levels, allowing the user to set
 // their preferred level.
-void brightnessButtonCallback() {
+void brightnessButtonOnPressCallback() {
   Serial.println(F("Brightness Button Pressed!"));
   brightnessLevel = (brightnessLevel + 1) % kNumBrightnessLevels;
   Serial.print(F("New brightness level: "));
   Serial.println(brightnessLevel);
   leds.setBrightness(kBrightnessLevels[brightnessLevel]);
   leds.show();
-}
-
-// Callback to run when the first unused button is pressed
-// It does nothing but print a debug message right now
-void unusedButtonOneCallback () {
-  Serial.println(F("Unused Button #1 Pressed!"));
-}
-
-// Callback to run when the second unused button is pressed
-// It does nothing but print a debug message right now
-void unusedButtonTwoCallback () {
-  Serial.println(F("Unused Button #2 Pressed!"));
 }
 
 // Periodic task that polls the buttons and runs their callbacks when appropriate
@@ -157,10 +145,10 @@ void setup() {
   clock.setup();
   leds.setup(kBrightnessLevels[brightnessLevel]);
 
-  buttons[SET_TIME_BUTTON].setup(kButton1Pin, &setTimeButtonCallback);
-  buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonCallback);
-  buttons[UNUSED_BUTTON_ONE].setup(kButton3Pin, &unusedButtonOneCallback);
-  buttons[UNUSED_BUTTON_TWO].setup(kButton4Pin, &unusedButtonTwoCallback);
+  buttons[SET_TIME_BUTTON].setup(kButton1Pin, &setTimeButtonOnPressCallback, nullptr, nullptr, nullptr);
+  buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonOnPressCallback, nullptr, nullptr, nullptr);
+  buttons[UNUSED_BUTTON_ONE].setup(kButton3Pin, nullptr, nullptr, nullptr, nullptr);
+  buttons[UNUSED_BUTTON_TWO].setup(kButton4Pin, nullptr, nullptr, nullptr, nullptr);
 
   setupSchedulerTasks();
 }

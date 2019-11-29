@@ -11,9 +11,14 @@ class Button {
 public:
   Button() : _pin(kNoPinSetupYet), _state(kButtonReleased), _onPress(nullptr) {}
 
-  void setup(uint8_t pin, ButtonHandlerCallback onPress) {
+  void setup(uint8_t pin,
+             ButtonHandlerCallback onPress, ButtonHandlerCallback onRelease,
+             ButtonHandlerCallback whileDown, ButtonHandlerCallback whileUp) {
     _pin = pin;
     _onPress = onPress;
+    _onRelease = onRelease;
+    _whileDown = whileDown;
+    _whileUp = whileUp;
 
     pinMode(_pin, INPUT_PULLUP);
     _state = getState();
@@ -22,24 +27,42 @@ public:
   bool checkStateAndRunCallbacks() {
     // If this button hasn't been setup and/or doesn't have a callback then
     // there's no reason to do anything here.  Return "false" to indicate a problem
-    if (_pin == kNoPinSetupYet || _onPress == nullptr) {
+    if (_pin == kNoPinSetupYet) {
       return false;
     }
 
-    // Get the current state of the button, and run a callback if the state changed
     bool newState = getState();
+
+    // First check if there are any edge-triggered callbacks to run
     if (newState != _state) {
       if (newState == kButtonPressed) {
         // Button Pressed
-        _onPress();
+	if (_onPress != nullptr) {
+          _onPress();
+        }
       } else {
         // Button Released
-        // TODO: Possibly add an onRelease callback to call here
+	if (_onRelease != nullptr) {
+          _onRelease();
+        }
       }
     }
 
     // Update the state with the newly collected state
     _state = newState;
+
+    // Finally run the state-based callbacks
+    if (_state == kButtonPressed) {
+	if (_whileDown != nullptr) {
+          _whileDown();
+        }
+    } else {
+	if (_whileUp != nullptr) {
+          _whileUp();
+        }
+    }
+
+
     return true;
   }
 
@@ -50,5 +73,5 @@ private:
 
   uint8_t _pin;
   bool _state;
-  ButtonHandlerCallback _onPress;
+  ButtonHandlerCallback _onPress, _onRelease, _whileDown, _whileUp;
 };
