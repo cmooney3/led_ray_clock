@@ -82,17 +82,38 @@ void updateMainLEDs() {
 }
 Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 
-// Callback to run when the "set time" button is pressed
+// Callback to run continuously while the "set time" button is pressed down
 // This adances the time faster than usual to let the user set the time.
-void setTimeButtonOnPressCallback() {
-  Serial.println(F("Set Time Button Pressed!"));
+static uint16_t timeSetButtonPressedDuration = 0;
+void setTimeButtonWhileDownCallback() {
+  Serial.println(F("Set Time Button Down!"));
 
-  // Move the time forward a bit
-  now = now + 5;
+  // Advance the amount of time that the button's been pressed down.
+  // The conditional is just there to make sure that the integer doesn't wrap
+  if (timeSetButtonPressedDuration <= 60000) {
+    timeSetButtonPressedDuration++;
+  }
+
+  // Move the time forward a bit based on how long the button has been pressed
+  // The longer it's been down, the faster time advances forward.
+  if (timeSetButtonPressedDuration < 60) {
+    now = now + 1;
+  } else if (timeSetButtonPressedDuration < 4 * 60 + 60) {
+    now = now + 7;
+  } else {
+    now = now + 70;
+  }
   clock.setTime(now);
 
   // Update the main LEDs to show the user the newly selected time
   updateMainLEDs();
+}
+// Callback to run when the brightness button is released
+// This resets the timer that tracks how long the button has been down (since
+// it's been released)
+void setTimeButtonOnReleaseCallback() {
+  Serial.println(F("Set Time Button Released!"));
+  timeSetButtonPressedDuration = 0;
 }
 
 // Callback to run when the "brightness" button is pressed
@@ -145,7 +166,7 @@ void setup() {
   clock.setup();
   leds.setup(kBrightnessLevels[brightnessLevel]);
 
-  buttons[SET_TIME_BUTTON].setup(kButton1Pin, &setTimeButtonOnPressCallback, nullptr, nullptr, nullptr);
+  buttons[SET_TIME_BUTTON].setup(kButton1Pin, nullptr, setTimeButtonOnReleaseCallback, &setTimeButtonWhileDownCallback, nullptr);
   buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonOnPressCallback, nullptr, nullptr, nullptr);
   buttons[UNUSED_BUTTON_ONE].setup(kButton3Pin, nullptr, nullptr, nullptr, nullptr);
   buttons[UNUSED_BUTTON_TWO].setup(kButton4Pin, nullptr, nullptr, nullptr, nullptr);
