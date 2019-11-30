@@ -86,7 +86,7 @@ Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 // This adances the time faster than usual to let the user set the time.
 static uint16_t timeSetButtonPressedDuration = 0;
 void setTimeButtonWhileDownCallback() {
-  Serial.println(F("Set Time Button Down!"));
+  Serial.print(F("Set Time Button Down!\tAdvancing time "));
 
   // Advance the amount of time that the button's been pressed down.
   // The conditional is just there to make sure that the integer doesn't wrap
@@ -96,13 +96,19 @@ void setTimeButtonWhileDownCallback() {
 
   // Move the time forward a bit based on how long the button has been pressed
   // The longer it's been down, the faster time advances forward.
+  uint8_t advanceStepSeconds = 0;
   if (timeSetButtonPressedDuration < 60) {
-    now = now + 1;
+    advanceStepSeconds = 1;
   } else if (timeSetButtonPressedDuration < 4 * 60 + 60) {
-    now = now + 7;
+    advanceStepSeconds = 7;
   } else {
-    now = now + 70;
+    advanceStepSeconds = 70;
   }
+  Serial.print(advanceStepSeconds);
+  Serial.println(F(" seconds."));
+
+  // Actually advance time and update it on the RTC
+  now += advanceStepSeconds;
   clock.setTime(now);
 
   // Update the main LEDs to show the user the newly selected time
