@@ -47,7 +47,7 @@ public:
     setSingleLEDColor(0, kMarkerColor);                  // Noon
     setSingleLEDColor(kNumLEDs / 4, kMarkerColor);       // Three
     setSingleLEDColor(kNumLEDs / 2, kMarkerColor);       // Six
-    setSingleLEDColor((3 * kNumLEDs) / 2, kMarkerColor); // Nine
+    setSingleLEDColor((3 * kNumLEDs) / 4, kMarkerColor); // Nine
   }
 
   // Display a given time on the clock face.
