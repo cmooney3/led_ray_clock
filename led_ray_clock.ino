@@ -8,6 +8,10 @@ static LEDController leds;
 #include "Clock.h"
 static Clock clock;
 
+#include "Setting.h"
+constexpr EEPROMAddress kBrightnessLevelSettingAddress = 0x0000;
+static Setting brightnessLevelSetting(kBrightnessLevelSettingAddress);
+
 #include "Button.h"
 // Button pin mappings on the PCB
 constexpr uint8_t kButton1Pin = 28;
@@ -25,7 +29,6 @@ static Button buttons[NUM_BUTTONS];
 // Brightness levels
 constexpr uint8_t kBrightnessLevels[] = {10, 64, 128, 192, 255};
 constexpr uint8_t kNumBrightnessLevels = sizeof(kBrightnessLevels);
-static uint8_t brightnessLevel = kNumBrightnessLevels / 2;
 
 #define BAUD_RATE 115200
 
@@ -127,10 +130,10 @@ void setTimeButtonOnReleaseCallback() {
 // their preferred level.
 void brightnessButtonOnPressCallback() {
   Serial.println(F("Brightness Button Pressed!"));
-  brightnessLevel = (brightnessLevel + 1) % kNumBrightnessLevels;
+  brightnessLevelSetting.setValue((brightnessLevelSetting.getValue() + 1) % kNumBrightnessLevels);
   Serial.print(F("New brightness level: "));
-  Serial.println(brightnessLevel);
-  leds.setBrightness(kBrightnessLevels[brightnessLevel]);
+  Serial.println(brightnessLevelSetting.getValue());
+  leds.setBrightness(kBrightnessLevels[brightnessLevelSetting.getValue()]);
   leds.show();
 }
 
@@ -170,7 +173,7 @@ void setup() {
   digitalWrite(kBlinkyLEDPin, LOW);
 
   clock.setup();
-  leds.setup(kBrightnessLevels[brightnessLevel]);
+  leds.setup(kBrightnessLevels[brightnessLevelSetting.getValue()]);
 
   buttons[SET_TIME_BUTTON].setup(kButton1Pin, nullptr, setTimeButtonOnReleaseCallback, &setTimeButtonWhileDownCallback, nullptr);
   buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonOnPressCallback, nullptr, nullptr, nullptr);
