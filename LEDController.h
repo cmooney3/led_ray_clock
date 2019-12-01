@@ -11,6 +11,15 @@ constexpr uint8_t kNumLEDs = 36;
 // How many notches "off" from noon is LED 0
 constexpr uint8_t kClockRotationalOffsetToNoon = 1;
 
+// Setting up constants to indicate the various kind of clock patterns
+constexpr uint8_t kShowPoles = 0b00000001;
+constexpr uint8_t kShowSecondHand = 0b00000010;
+enum { NO_POLES_AND_NO_SECOND_HAND = 0,
+       POLES_AND_NO_SECOND_HAND = kShowPoles,
+       NO_POLES_AND_SECOND_HAND = kShowSecondHand,
+       POLES_AND_SECOND_HAND = kShowPoles | kShowSecondHand,
+       NUM_PATTERNS = 4 };
+
 class LEDController {
 public:
   void setup(uint8_t brightness) {
@@ -50,15 +59,20 @@ public:
     setSingleLEDColor((3 * kNumLEDs) / 4, kMarkerColor); // Nine
   }
 
-  // Display a given time on the clock face.
-  // TODO: Add a color picker as an additional parameter
-  void displayTime(const RtcDateTime& time) {
+  // Turn on a light for the second hand for a given time on the clock face.
+  void displaySecondHand(const RtcDateTime& time) {
     uint16_t second_led = time.Second() * kNumLEDs / 60;
     setSingleLEDColor(second_led, CRGB::Red);
+  }
 
+  // Turn on a light for the minute hand for a given time on the clock face.
+  void displayMinuteHand(const RtcDateTime& time) {
     uint16_t minute_led = time.Minute() * kNumLEDs / 60;
     setSingleLEDColor(minute_led, CRGB::Green);
+  }
 
+  // Turn on a light for the hour hand for a given time on the clock face.
+  void displayHourHand(const RtcDateTime& time) {
     uint16_t hour_led = (time.Hour() % 12) * kNumLEDs / 12;
     hour_led += (kNumLEDs * time.Minute()) / (12 * 60); // Advance within the hour based on the minute
     setSingleLEDColor(hour_led, CRGB::Blue);

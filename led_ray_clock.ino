@@ -10,7 +10,9 @@ static Clock clock;
 
 #include "Setting.h"
 constexpr EEPROMAddress kBrightnessLevelSettingAddress = 0x0000;
+constexpr EEPROMAddress kPatternSettingAddress = 0x0002;
 static Setting brightnessLevelSetting(kBrightnessLevelSettingAddress);
+static Setting patternSetting(kPatternSettingAddress);
 
 #include "Button.h"
 // Button pin mappings on the PCB
@@ -19,11 +21,11 @@ constexpr uint8_t kButton2Pin = 29;
 constexpr uint8_t kButton3Pin = 30;
 constexpr uint8_t kButton4Pin = 31;
 // Functional button number mappings
-enum {SET_TIME_BUTTON = 0,
-      BRIGHTNESS_BUTTON = 1,
-      UNUSED_BUTTON_ONE = 2,
-      UNUSED_BUTTON_TWO = 3,
-      NUM_BUTTONS = 4};
+enum { SET_TIME_BUTTON = 0,
+       BRIGHTNESS_BUTTON = 1,
+       PATTERN_BUTTON = 2,
+       UNUSED_BUTTON = 3,
+       NUM_BUTTONS = 4 };
 static Button buttons[NUM_BUTTONS];
 
 // Brightness levels
@@ -72,14 +74,22 @@ Task taskUpdatePowerIndicator(TASK_SECOND / 4, TASK_FOREVER, &updatePowerIndicat
 // In this case, it just rainbow fades, but in the future this should actually
 // render frames of the clock animation.
 void updateMainLEDs() {
-  // First clear out the LEDs and dimly light 12, 3, 6, and 9
+  // First clear out the LEDs
   leds.fillSolid(CRGB::Black);
 
-  // Put in a pole marker at noon, 3, 6, and 9
-  leds.setPoleMarkers();
+  // Put in a pole marker at noon, 3, 6, and 9 (if the current pattern setting includes them)
+  if (patternSetting.getValue() & kShowPoles) {
+    leds.setPoleMarkers();
+  }
 
-  // Display the time on top
-  leds.displayTime(now);
+  // Display the time on the clock face one hand at a time
+  if (patternSetting.getValue() & kShowSecondHand) {
+    // Only display the second hand if the currently selected pattern includes it
+    leds.displaySecondHand(now);
+  }
+  // Always show the minute and hour hands -- you really need those
+  leds.displayMinuteHand(now);
+  leds.displayHourHand(now);
 
   leds.show();
 }
@@ -131,10 +141,27 @@ void setTimeButtonOnReleaseCallback() {
 void brightnessButtonOnPressCallback() {
   Serial.println(F("Brightness Button Pressed!"));
   brightnessLevelSetting.setValue((brightnessLevelSetting.getValue() + 1) % kNumBrightnessLevels);
-  Serial.print(F("New brightness level: "));
+  Serial.print(F("\tNew brightness level: "));
   Serial.println(brightnessLevelSetting.getValue());
   leds.setBrightness(kBrightnessLevels[brightnessLevelSetting.getValue()]);
   leds.show();
+}
+
+// Callback to run when the "pattern" button is pressed
+// It cycles through a few different settings to control the "pattern" that the clock uses.
+// Specifically it turns the pole markers and the second hand on/off
+void patternButtonOnPressCallback() {
+  Serial.println(F("Pattern Button Pressed!"));
+  patternSetting.setValue((patternSetting.getValue() + 1) % NUM_PATTERNS);
+  Serial.print(F("\tNew pattern selected: "));
+  Serial.println(patternSetting.getValue());
+  Serial.print(F("\tPole markers:\t"));
+  Serial.println(static_cast<bool>(patternSetting.getValue() & kShowPoles) ? F("on") : F("off"));
+  Serial.print(F("\tSecond hand:\t"));
+  Serial.println(static_cast<bool>(patternSetting.getValue() & kShowSecondHand) ? F("on") : F("off"));
+
+  // Update the display so the new setting takes effect immediately
+  updateMainLEDs();
 }
 
 // Periodic task that polls the buttons and runs their callbacks when appropriate
@@ -177,8 +204,8 @@ void setup() {
 
   buttons[SET_TIME_BUTTON].setup(kButton1Pin, nullptr, setTimeButtonOnReleaseCallback, &setTimeButtonWhileDownCallback, nullptr);
   buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonOnPressCallback, nullptr, nullptr, nullptr);
-  buttons[UNUSED_BUTTON_ONE].setup(kButton3Pin, nullptr, nullptr, nullptr, nullptr);
-  buttons[UNUSED_BUTTON_TWO].setup(kButton4Pin, nullptr, nullptr, nullptr, nullptr);
+  buttons[PATTERN_BUTTON].setup(kButton3Pin, &patternButtonOnPressCallback, nullptr, nullptr, nullptr);
+  buttons[UNUSED_BUTTON].setup(kButton4Pin, nullptr, nullptr, nullptr, nullptr);
 
   setupSchedulerTasks();
 }
