@@ -60,22 +60,22 @@ public:
   }
 
   // Turn on a light for the second hand for a given time on the clock face.
-  void displaySecondHand(const RtcDateTime& time) {
+  void displaySecondHand(const RtcDateTime& time, CRGB color) {
     uint16_t second_led = time.Second() * kNumLEDs / 60;
-    setSingleLEDColor(second_led, CRGB::Red);
+    setSingleLEDColor(second_led, color);
   }
 
   // Turn on a light for the minute hand for a given time on the clock face.
-  void displayMinuteHand(const RtcDateTime& time) {
+  void displayMinuteHand(const RtcDateTime& time, CRGB color) {
     uint16_t minute_led = time.Minute() * kNumLEDs / 60;
-    setSingleLEDColor(minute_led, CRGB::Green);
+    setSingleLEDColor(minute_led, color);
   }
 
   // Turn on a light for the hour hand for a given time on the clock face.
-  void displayHourHand(const RtcDateTime& time) {
+  void displayHourHand(const RtcDateTime& time, CRGB color) {
     uint16_t hour_led = (time.Hour() % 12) * kNumLEDs / 12;
     hour_led += (kNumLEDs * time.Minute()) / (12 * 60); // Advance within the hour based on the minute
-    setSingleLEDColor(hour_led, CRGB::Blue);
+    setSingleLEDColor(hour_led, color);
   }
 
   // Latch any new values into the LEDs

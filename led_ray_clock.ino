@@ -11,8 +11,10 @@ static Clock clock;
 #include "Setting.h"
 constexpr EEPROMAddress kBrightnessLevelSettingAddress = 0x0000;
 constexpr EEPROMAddress kPatternSettingAddress = 0x0002;
+constexpr EEPROMAddress kColorSettingAddress = 0x0004;
 static Setting brightnessLevelSetting(kBrightnessLevelSettingAddress);
 static Setting patternSetting(kPatternSettingAddress);
+static Setting colorSetting(kColorSettingAddress);
 
 #include "Button.h"
 // Button pin mappings on the PCB
@@ -24,7 +26,7 @@ constexpr uint8_t kButton4Pin = 31;
 enum { SET_TIME_BUTTON = 0,
        BRIGHTNESS_BUTTON = 1,
        PATTERN_BUTTON = 2,
-       UNUSED_BUTTON = 3,
+       COLOR_BUTTON = 3,
        NUM_BUTTONS = 4 };
 static Button buttons[NUM_BUTTONS];
 
@@ -85,11 +87,11 @@ void updateMainLEDs() {
   // Display the time on the clock face one hand at a time
   if (patternSetting.getValue() & kShowSecondHand) {
     // Only display the second hand if the currently selected pattern includes it
-    leds.displaySecondHand(now);
+    leds.displaySecondHand(now, CRGB::Red);
   }
   // Always show the minute and hour hands -- you really need those
-  leds.displayMinuteHand(now);
-  leds.displayHourHand(now);
+  leds.displayMinuteHand(now, CRGB::Green);
+  leds.displayHourHand(now, CRGB::Blue);
 
   leds.show();
 }
@@ -164,6 +166,12 @@ void patternButtonOnPressCallback() {
   updateMainLEDs();
 }
 
+// Callback to run when the "Color" button is pressed
+// It cycles through a few different color sets to be used for the clock hands
+void colorButtonOnPressCallback() {
+  Serial.println(F("Color Button Pressed!"));
+}
+
 // Periodic task that polls the buttons and runs their callbacks when appropriate
 void checkButtonStateAndRunCallbacks() {
   for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
@@ -205,7 +213,7 @@ void setup() {
   buttons[SET_TIME_BUTTON].setup(kButton1Pin, nullptr, setTimeButtonOnReleaseCallback, &setTimeButtonWhileDownCallback, nullptr);
   buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonOnPressCallback, nullptr, nullptr, nullptr);
   buttons[PATTERN_BUTTON].setup(kButton3Pin, &patternButtonOnPressCallback, nullptr, nullptr, nullptr);
-  buttons[UNUSED_BUTTON].setup(kButton4Pin, nullptr, nullptr, nullptr, nullptr);
+  buttons[COLOR_BUTTON].setup(kButton4Pin, &colorButtonOnPressCallback, nullptr, nullptr, nullptr);
 
   setupSchedulerTasks();
 }
