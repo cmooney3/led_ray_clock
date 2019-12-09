@@ -11,15 +11,6 @@ constexpr uint8_t kNumLEDs = 36;
 // How many notches "off" from noon is LED 0
 constexpr uint8_t kClockRotationalOffsetToNoon = 1;
 
-// Setting up constants to indicate the various kind of clock patterns
-constexpr uint8_t kShowPoles = 0b00000001;
-constexpr uint8_t kShowSecondHand = 0b00000010;
-enum { NO_POLES_AND_NO_SECOND_HAND = 0,
-       POLES_AND_NO_SECOND_HAND = kShowPoles,
-       NO_POLES_AND_SECOND_HAND = kShowSecondHand,
-       POLES_AND_SECOND_HAND = kShowPoles | kShowSecondHand,
-       NUM_PATTERNS = 4 };
-
 class LEDController {
 public:
   void setup(uint8_t brightness) {

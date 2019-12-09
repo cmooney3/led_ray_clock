@@ -8,14 +8,6 @@ static LEDController leds;
 #include "Clock.h"
 static Clock clock;
 
-#include "Setting.h"
-constexpr EEPROMAddress kBrightnessLevelSettingAddress = 0x0000;
-constexpr EEPROMAddress kPatternSettingAddress = 0x0002;
-constexpr EEPROMAddress kColorSettingAddress = 0x0004;
-static Setting brightnessLevelSetting(kBrightnessLevelSettingAddress);
-static Setting patternSetting(kPatternSettingAddress);
-static Setting colorSetting(kColorSettingAddress);
-
 // The various color sets that can be selected for the clock hands
 typedef struct color_set {
 	CRGB second_hand;
@@ -24,7 +16,7 @@ typedef struct color_set {
 } ColorSet;
 const ColorSet kColorSets[] = {
 	{CRGB::Purple, CRGB::Green, CRGB::Blue},
-	{CRGB::Yellow, CRGB::Red, CRGB::Orange},
+	{CRGB::Orange, CRGB::Red, CRGB::Yellow},
 };
 const uint8_t kNumColorSets = sizeof(kColorSets) / sizeof(ColorSet);
 
@@ -45,6 +37,24 @@ static Button buttons[NUM_BUTTONS];
 // Brightness levels
 constexpr uint8_t kBrightnessLevels[] = {10, 64, 128, 192, 255};
 constexpr uint8_t kNumBrightnessLevels = sizeof(kBrightnessLevels);
+
+// Setting up constants to indicate the various kind of clock patterns
+constexpr uint8_t kShowPoles = 0b00000001;
+constexpr uint8_t kShowSecondHand = 0b00000010;
+enum { NO_POLES_AND_NO_SECOND_HAND = 0,
+       POLES_AND_NO_SECOND_HAND = kShowPoles,
+       NO_POLES_AND_SECOND_HAND = kShowSecondHand,
+       POLES_AND_SECOND_HAND = kShowPoles | kShowSecondHand,
+       NUM_PATTERNS = 4 };
+
+
+#include "Setting.h"
+constexpr EEPROMAddress kBrightnessLevelSettingAddress = 0x0000;
+constexpr EEPROMAddress kPatternSettingAddress = 0x0002;
+constexpr EEPROMAddress kColorSettingAddress = 0x0004;
+static Setting brightnessLevelSetting(kBrightnessLevelSettingAddress, kNumBrightnessLevels);
+static Setting patternSetting(kPatternSettingAddress, NUM_PATTERNS);
+static Setting colorSetting(kColorSettingAddress, kNumColorSets);
 
 #define BAUD_RATE 115200
 
@@ -181,10 +191,13 @@ void patternButtonOnPressCallback() {
 // Callback to run when the "Color" button is pressed
 // It cycles through a few different color sets to be used for the clock hands
 void colorButtonOnPressCallback() {
-  Serial.println(F("Color Button Pressed!"));
+  //Serial.println(F("Color Button Pressed!"));
   colorSetting.setValue((colorSetting.getValue() + 1) % kNumColorSets);
-  Serial.print(F("\tNew color set selected: "));
-  Serial.println(colorSetting.getValue());
+  //Serial.print(F("\tNew color set selected: "));
+  //Serial.println(colorSetting.getValue());
+
+  // Update the display so the new colors take effect immediately
+  updateMainLEDs();
 }
 
 // Periodic task that polls the buttons and runs their callbacks when appropriate
@@ -217,7 +230,7 @@ void setupSchedulerTasks() {
 
 void setup() {
   Serial.begin(BAUD_RATE);
-  Serial.println("Booting!");
+  Serial.println(F("Booting!"));
 
   pinMode(kBlinkyLEDPin, OUTPUT);
   digitalWrite(kBlinkyLEDPin, LOW);
@@ -230,12 +243,8 @@ void setup() {
   buttons[PATTERN_BUTTON].setup(kButton3Pin, &patternButtonOnPressCallback, nullptr, nullptr, nullptr);
   buttons[COLOR_BUTTON].setup(kButton4Pin, &colorButtonOnPressCallback, nullptr, nullptr, nullptr);
 
-//  Serial.print("brightnessLevelSetting: ");
-//  Serial.println(brightnessLevelSetting.getValue());
-//  Serial.print("patternLevelSetting: ");
-//  Serial.println(patternSetting.getValue());
-//  Serial.print("colorLevelSetting: ");
-//  Serial.println(colorSetting.getValue());
+  brightnessLevelSetting.readValue();
+  patternSetting.readValue();
 
   setupSchedulerTasks();
 }
