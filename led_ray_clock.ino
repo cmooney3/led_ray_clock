@@ -16,6 +16,18 @@ static Setting brightnessLevelSetting(kBrightnessLevelSettingAddress);
 static Setting patternSetting(kPatternSettingAddress);
 static Setting colorSetting(kColorSettingAddress);
 
+// The various color sets that can be selected for the clock hands
+typedef struct color_set {
+	CRGB second_hand;
+	CRGB minute_hand;
+	CRGB hour_hand;
+} ColorSet;
+const ColorSet kColorSets[] = {
+	{CRGB::Purple, CRGB::Green, CRGB::Blue},
+	{CRGB::Yellow, CRGB::Red, CRGB::Orange},
+};
+const uint8_t kNumColorSets = sizeof(kColorSets) / sizeof(ColorSet);
+
 #include "Button.h"
 // Button pin mappings on the PCB
 constexpr uint8_t kButton1Pin = 28;
@@ -87,11 +99,11 @@ void updateMainLEDs() {
   // Display the time on the clock face one hand at a time
   if (patternSetting.getValue() & kShowSecondHand) {
     // Only display the second hand if the currently selected pattern includes it
-    leds.displaySecondHand(now, CRGB::Red);
+    leds.displaySecondHand(now, kColorSets[colorSetting.getValue()].second_hand);
   }
   // Always show the minute and hour hands -- you really need those
-  leds.displayMinuteHand(now, CRGB::Green);
-  leds.displayHourHand(now, CRGB::Blue);
+  leds.displayMinuteHand(now, kColorSets[colorSetting.getValue()].minute_hand);
+  leds.displayHourHand(now, kColorSets[colorSetting.getValue()].hour_hand);
 
   leds.show();
 }
@@ -170,6 +182,9 @@ void patternButtonOnPressCallback() {
 // It cycles through a few different color sets to be used for the clock hands
 void colorButtonOnPressCallback() {
   Serial.println(F("Color Button Pressed!"));
+  colorSetting.setValue((colorSetting.getValue() + 1) % kNumColorSets);
+  Serial.print(F("\tNew color set selected: "));
+  Serial.println(colorSetting.getValue());
 }
 
 // Periodic task that polls the buttons and runs their callbacks when appropriate
@@ -214,6 +229,13 @@ void setup() {
   buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonOnPressCallback, nullptr, nullptr, nullptr);
   buttons[PATTERN_BUTTON].setup(kButton3Pin, &patternButtonOnPressCallback, nullptr, nullptr, nullptr);
   buttons[COLOR_BUTTON].setup(kButton4Pin, &colorButtonOnPressCallback, nullptr, nullptr, nullptr);
+
+//  Serial.print("brightnessLevelSetting: ");
+//  Serial.println(brightnessLevelSetting.getValue());
+//  Serial.print("patternLevelSetting: ");
+//  Serial.println(patternSetting.getValue());
+//  Serial.print("colorLevelSetting: ");
+//  Serial.println(colorSetting.getValue());
 
   setupSchedulerTasks();
 }
