@@ -10,13 +10,16 @@ static Clock clock;
 
 // The various color sets that can be selected for the clock hands
 typedef struct color_set {
-	CRGB second_hand;
-	CRGB minute_hand;
-	CRGB hour_hand;
+    CRGB second_hand;
+    CRGB minute_hand;
+    CRGB hour_hand;
 } ColorSet;
 const ColorSet kColorSets[] = {
-	{CRGB::Purple, CRGB::Green, CRGB::Blue},
-	{CRGB::Orange, CRGB::Red, CRGB::Yellow},
+    {CRGB::Purple, CRGB::Green, CRGB::Blue},
+    {CRGB::Purple, CRGB::Green, CRGB::Cyan},
+    {CRGB::Green, CRGB::Purple, CRGB::Cyan},
+//    {CRGB::Orange, CRGB::Red, CRGB::Yellow},
+//    {CRGB::Yellow, CRGB::Orange, CRGB::Red},
 };
 const uint8_t kNumColorSets = sizeof(kColorSets) / sizeof(ColorSet);
 
@@ -69,15 +72,15 @@ constexpr uint8_t kBlinkyLEDPin = 24;
 // the current time.
 static RtcDateTime now;
 void updateTime() {
-  now = clock.getTime();
-  // Note: sprintf_P() allows you to store the format string in progmem
-  // to save a little bit of memory
-  constexpr uint8_t kMaxTimeStringLength = 9; // 00:00:00 is 8 characters + null
-  char timeString[kMaxTimeStringLength];
-  sprintf_P(timeString,
-            PSTR("%d:%02d:%02d"),
-            now.Hour() % 12, now.Minute(), now.Second());
-  Serial.println(timeString);
+    now = clock.getTime();
+    // Note: sprintf_P() allows you to store the format string in progmem
+    // to save a little bit of memory
+    constexpr uint8_t kMaxTimeStringLength = 9; // 00:00:00 is 8 characters + null
+    char timeString[kMaxTimeStringLength];
+    sprintf_P(timeString,
+              PSTR("%d:%02d:%02d"),
+              now.Hour() % 12, now.Minute(), now.Second());
+    Serial.println(timeString);
 }
 Task taskUpdateTime(TASK_SECOND, TASK_FOREVER, &updateTime);
 
@@ -88,9 +91,9 @@ Task taskUpdateTime(TASK_SECOND, TASK_FOREVER, &updateTime);
 // just blinks to let you know that everything is powered up and the scheduler
 // is running/etc.
 void updatePowerIndicator() {
-  static bool powerIndicatorState = false;
-  powerIndicatorState = !powerIndicatorState;
-  digitalWrite(kBlinkyLEDPin, powerIndicatorState);
+    static bool powerIndicatorState = false;
+    powerIndicatorState = !powerIndicatorState;
+    digitalWrite(kBlinkyLEDPin, powerIndicatorState);
 }
 Task taskUpdatePowerIndicator(TASK_SECOND / 4, TASK_FOREVER, &updatePowerIndicator);
 
@@ -98,24 +101,24 @@ Task taskUpdatePowerIndicator(TASK_SECOND / 4, TASK_FOREVER, &updatePowerIndicat
 // In this case, it just rainbow fades, but in the future this should actually
 // render frames of the clock animation.
 void updateMainLEDs() {
-  // First clear out the LEDs
-  leds.fillSolid(CRGB::Black);
-
-  // Put in a pole marker at noon, 3, 6, and 9 (if the current pattern setting includes them)
-  if (patternSetting.getValue() & kShowPoles) {
-    leds.setPoleMarkers();
-  }
-
-  // Display the time on the clock face one hand at a time
-  if (patternSetting.getValue() & kShowSecondHand) {
-    // Only display the second hand if the currently selected pattern includes it
-    leds.displaySecondHand(now, kColorSets[colorSetting.getValue()].second_hand);
-  }
-  // Always show the minute and hour hands -- you really need those
-  leds.displayMinuteHand(now, kColorSets[colorSetting.getValue()].minute_hand);
-  leds.displayHourHand(now, kColorSets[colorSetting.getValue()].hour_hand);
-
-  leds.show();
+    // First clear out the LEDs
+    leds.fillSolid(CRGB::Black);
+  
+    // Put in a pole marker at noon, 3, 6, and 9 (if the current pattern setting includes them)
+    if (patternSetting.getValue() & kShowPoles) {
+        leds.setPoleMarkers();
+    }
+  
+    // Display the time on the clock face one hand at a time
+    if (patternSetting.getValue() & kShowSecondHand) {
+        // Only display the second hand if the currently selected pattern includes it
+        leds.displaySecondHand(now, kColorSets[colorSetting.getValue()].second_hand);
+    }
+    // Always show the minute and hour hands -- you really need those
+    leds.displayMinuteHand(now, kColorSets[colorSetting.getValue()].minute_hand);
+    leds.displayHourHand(now, kColorSets[colorSetting.getValue()].hour_hand);
+  
+    leds.show();
 }
 Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 
@@ -123,132 +126,132 @@ Task taskUpdateMainLEDs(TASK_SECOND, TASK_FOREVER, &updateMainLEDs);
 // This adances the time faster than usual to let the user set the time.
 static uint16_t timeSetButtonPressedDuration = 0;
 void setTimeButtonWhileDownCallback() {
-  Serial.print(F("Set Time Button Down!\tAdvancing time "));
-
-  // Advance the amount of time that the button's been pressed down.
-  // The conditional is just there to make sure that the integer doesn't wrap
-  if (timeSetButtonPressedDuration <= 60000) {
-    timeSetButtonPressedDuration++;
-  }
-
-  // Move the time forward a bit based on how long the button has been pressed
-  // The longer it's been down, the faster time advances forward.
-  uint8_t advanceStepSeconds = 0;
-  if (timeSetButtonPressedDuration < 60) {
-    advanceStepSeconds = 1;
-  } else if (timeSetButtonPressedDuration < 4 * 60 + 60) {
-    advanceStepSeconds = 7;
-  } else {
-    advanceStepSeconds = 70;
-  }
-  Serial.print(advanceStepSeconds);
-  Serial.println(F(" seconds."));
-
-  // Actually advance time and update it on the RTC
-  now += advanceStepSeconds;
-  clock.setTime(now);
-
-  // Update the main LEDs to show the user the newly selected time
-  updateMainLEDs();
+    Serial.print(F("Set Time Button Down!\tAdvancing time "));
+  
+    // Advance the amount of time that the button's been pressed down.
+    // The conditional is just there to make sure that the integer doesn't wrap
+    if (timeSetButtonPressedDuration <= 60000) {
+        timeSetButtonPressedDuration++;
+    }
+  
+    // Move the time forward a bit based on how long the button has been pressed
+    // The longer it's been down, the faster time advances forward.
+    uint8_t advanceStepSeconds = 0;
+    if (timeSetButtonPressedDuration < 60) {
+        advanceStepSeconds = 1;
+    } else if (timeSetButtonPressedDuration < 4 * 60 + 60) {
+        advanceStepSeconds = 7;
+    } else {
+        advanceStepSeconds = 70;
+    }
+    Serial.print(advanceStepSeconds);
+    Serial.println(F(" seconds."));
+  
+    // Actually advance time and update it on the RTC
+    now += advanceStepSeconds;
+    clock.setTime(now);
+  
+    // Update the main LEDs to show the user the newly selected time
+    updateMainLEDs();
 }
 // Callback to run when the brightness button is released
 // This resets the timer that tracks how long the button has been down (since
 // it's been released)
 void setTimeButtonOnReleaseCallback() {
-  Serial.println(F("Set Time Button Released!"));
-  timeSetButtonPressedDuration = 0;
+    Serial.println(F("Set Time Button Released!"));
+    timeSetButtonPressedDuration = 0;
 }
 
 // Callback to run when the "brightness" button is pressed
 // It cycles through the list of brightness levels, allowing the user to set
 // their preferred level.
 void brightnessButtonOnPressCallback() {
-  Serial.println(F("Brightness Button Pressed!"));
-  brightnessLevelSetting.setValue((brightnessLevelSetting.getValue() + 1) % kNumBrightnessLevels);
-  Serial.print(F("\tNew brightness level: "));
-  Serial.println(brightnessLevelSetting.getValue());
-  leds.setBrightness(kBrightnessLevels[brightnessLevelSetting.getValue()]);
-  leds.show();
+      Serial.println(F("Brightness Button Pressed!"));
+      brightnessLevelSetting.setValue((brightnessLevelSetting.getValue() + 1) % kNumBrightnessLevels);
+      Serial.print(F("\tNew brightness level: "));
+      Serial.println(brightnessLevelSetting.getValue());
+      leds.setBrightness(kBrightnessLevels[brightnessLevelSetting.getValue()]);
+      leds.show();
 }
 
 // Callback to run when the "pattern" button is pressed
 // It cycles through a few different settings to control the "pattern" that the clock uses.
 // Specifically it turns the pole markers and the second hand on/off
 void patternButtonOnPressCallback() {
-  Serial.println(F("Pattern Button Pressed!"));
-  patternSetting.setValue((patternSetting.getValue() + 1) % NUM_PATTERNS);
-  Serial.print(F("\tNew pattern selected: "));
-  Serial.println(patternSetting.getValue());
-  Serial.print(F("\tPole markers:\t"));
-  Serial.println(static_cast<bool>(patternSetting.getValue() & kShowPoles) ? F("on") : F("off"));
-  Serial.print(F("\tSecond hand:\t"));
-  Serial.println(static_cast<bool>(patternSetting.getValue() & kShowSecondHand) ? F("on") : F("off"));
+    Serial.println(F("Pattern Button Pressed!"));
+    patternSetting.setValue((patternSetting.getValue() + 1) % NUM_PATTERNS);
+    Serial.print(F("\tNew pattern selected: "));
+    Serial.println(patternSetting.getValue());
+    Serial.print(F("\tPole markers:\t"));
+    Serial.println(static_cast<bool>(patternSetting.getValue() & kShowPoles) ? F("on") : F("off"));
+    Serial.print(F("\tSecond hand:\t"));
+    Serial.println(static_cast<bool>(patternSetting.getValue() & kShowSecondHand) ? F("on") : F("off"));
 
-  // Update the display so the new setting takes effect immediately
-  updateMainLEDs();
+    // Update the display so the new setting takes effect immediately
+    updateMainLEDs();
 }
 
 // Callback to run when the "Color" button is pressed
 // It cycles through a few different color sets to be used for the clock hands
 void colorButtonOnPressCallback() {
-  //Serial.println(F("Color Button Pressed!"));
-  colorSetting.setValue((colorSetting.getValue() + 1) % kNumColorSets);
-  //Serial.print(F("\tNew color set selected: "));
-  //Serial.println(colorSetting.getValue());
+    //Serial.println(F("Color Button Pressed!"));
+    colorSetting.setValue((colorSetting.getValue() + 1) % kNumColorSets);
+    //Serial.print(F("\tNew color set selected: "));
+    //Serial.println(colorSetting.getValue());
 
-  // Update the display so the new colors take effect immediately
-  updateMainLEDs();
+    // Update the display so the new colors take effect immediately
+    updateMainLEDs();
 }
 
 // Periodic task that polls the buttons and runs their callbacks when appropriate
 void checkButtonStateAndRunCallbacks() {
-  for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
-    bool success = buttons[i].checkStateAndRunCallbacks();
-    if (!success) {
-      Serial.print(F("Error: buttons["));
-      Serial.print(i);
-      Serial.println(F("] is not set up correctly"));
+    for (uint8_t i = 0; i < NUM_BUTTONS; i++) {
+        bool success = buttons[i].checkStateAndRunCallbacks();
+        if (!success) {
+            Serial.print(F("Error: buttons["));
+            Serial.print(i);
+            Serial.println(F("] is not set up correctly"));
+        }
     }
-  }
 }
 Task taskCheckButtonStates(TASK_MILLISECOND * 50, TASK_FOREVER, &checkButtonStateAndRunCallbacks);
 
 // Set up the tasks defined above and get the scheduler ready to run.
 void setupSchedulerTasks() {
-  scheduler.addTask(taskUpdateTime);
-  taskUpdateTime.enable();
+    scheduler.addTask(taskUpdateTime);
+    taskUpdateTime.enable();
 
-  scheduler.addTask(taskUpdatePowerIndicator);
-  taskUpdatePowerIndicator.enable();
+    scheduler.addTask(taskUpdatePowerIndicator);
+    taskUpdatePowerIndicator.enable();
 
-  scheduler.addTask(taskUpdateMainLEDs);
-  taskUpdateMainLEDs.enable();
+    scheduler.addTask(taskUpdateMainLEDs);
+    taskUpdateMainLEDs.enable();
 
-  scheduler.addTask(taskCheckButtonStates);
-  taskCheckButtonStates.enable();
+    scheduler.addTask(taskCheckButtonStates);
+    taskCheckButtonStates.enable();
 }
 
 void setup() {
-  Serial.begin(BAUD_RATE);
-  Serial.println(F("Booting!"));
+    Serial.begin(BAUD_RATE);
+    Serial.println(F("Booting!"));
 
-  pinMode(kBlinkyLEDPin, OUTPUT);
-  digitalWrite(kBlinkyLEDPin, LOW);
+    pinMode(kBlinkyLEDPin, OUTPUT);
+    digitalWrite(kBlinkyLEDPin, LOW);
 
-  clock.setup();
-  leds.setup(kBrightnessLevels[brightnessLevelSetting.getValue()]);
+    clock.setup();
+    leds.setup(kBrightnessLevels[brightnessLevelSetting.getValue()]);
 
-  buttons[SET_TIME_BUTTON].setup(kButton1Pin, nullptr, setTimeButtonOnReleaseCallback, &setTimeButtonWhileDownCallback, nullptr);
-  buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonOnPressCallback, nullptr, nullptr, nullptr);
-  buttons[PATTERN_BUTTON].setup(kButton3Pin, &patternButtonOnPressCallback, nullptr, nullptr, nullptr);
-  buttons[COLOR_BUTTON].setup(kButton4Pin, &colorButtonOnPressCallback, nullptr, nullptr, nullptr);
+    buttons[SET_TIME_BUTTON].setup(kButton1Pin, nullptr, setTimeButtonOnReleaseCallback, &setTimeButtonWhileDownCallback, nullptr);
+    buttons[BRIGHTNESS_BUTTON].setup(kButton2Pin, &brightnessButtonOnPressCallback, nullptr, nullptr, nullptr);
+    buttons[PATTERN_BUTTON].setup(kButton3Pin, &patternButtonOnPressCallback, nullptr, nullptr, nullptr);
+    buttons[COLOR_BUTTON].setup(kButton4Pin, &colorButtonOnPressCallback, nullptr, nullptr, nullptr);
 
-  brightnessLevelSetting.readValue();
-  patternSetting.readValue();
+    brightnessLevelSetting.readValue();
+    patternSetting.readValue();
 
-  setupSchedulerTasks();
+    setupSchedulerTasks();
 }
 
 void loop() {
-  scheduler.execute();
+    scheduler.execute();
 }

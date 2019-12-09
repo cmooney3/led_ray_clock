@@ -18,32 +18,32 @@ constexpr uint8_t kUnexplainedMemoryBufferSize = 50;
 
 class Clock {
 public:
-  Clock() : _rtc(Wire) {}
+    Clock() : _rtc(Wire) {}
 
-  void setup() {
-    _rtc.Begin();
-  
-    RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
-    if (!_rtc.IsDateTimeValid()) {
-      _rtc.SetDateTime(compiled);
+    void setup() {
+        _rtc.Begin();
+    
+        RtcDateTime compiled = RtcDateTime(__DATE__, __TIME__);
+        if (!_rtc.IsDateTimeValid()) {
+            _rtc.SetDateTime(compiled);
+        }
+    
+        if (!_rtc.GetIsRunning()) {
+            _rtc.SetIsRunning(true);
+        }
+        _rtc.Enable32kHzPin(false);
+        _rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
     }
-  
-    if (!_rtc.GetIsRunning()) {
-        _rtc.SetIsRunning(true);
+
+    RtcDateTime getTime() {
+        return _rtc.GetDateTime();
     }
-    _rtc.Enable32kHzPin(false);
-    _rtc.SetSquareWavePin(DS3231SquareWavePin_ModeNone);
-  }
 
-  RtcDateTime getTime() {
-    return _rtc.GetDateTime();
-  }
-
-  void setTime(const RtcDateTime& time) {
-    _rtc.SetDateTime(time);
-  }
+    void setTime(const RtcDateTime& time) {
+        _rtc.SetDateTime(time);
+    }
 
 private:
-  RtcDS3231<TwoWire> _rtc;
-  uint8_t buffer[kUnexplainedMemoryBufferSize];
+    RtcDS3231<TwoWire> _rtc;
+    uint8_t buffer[kUnexplainedMemoryBufferSize];
 };

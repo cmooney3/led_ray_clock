@@ -13,67 +13,67 @@ constexpr uint8_t kClockRotationalOffsetToNoon = 1;
 
 class LEDController {
 public:
-  void setup(uint8_t brightness) {
-    FastLED.addLeds<WS2812B, kLEDPin, GRB>(_leds, kNumLEDs);
-    setBrightness(brightness);
-  }
+    void setup(uint8_t brightness) {
+        FastLED.addLeds<WS2812B, kLEDPin, GRB>(_leds, kNumLEDs);
+        setBrightness(brightness);
+    }
 
-  void setBrightness(uint8_t brightness) {
-    FastLED.setBrightness(brightness);
-  }
+    void setBrightness(uint8_t brightness) {
+        FastLED.setBrightness(brightness);
+    }
 
-  // Set the whole LED strip to be a solid color and display it.
-  void fillSolid(CRGB color) {
-    fill_solid(_leds, kNumLEDs, color);
-  }
+    // Set the whole LED strip to be a solid color and display it.
+    void fillSolid(CRGB color) {
+        fill_solid(_leds, kNumLEDs, color);
+    }
 
-  // Set a single LED to a specific color in "modulo coordinates"
-  // This offets the position to be reletive to the "noon" position, not the
-  // actual start of the LED strip.
-  // eg: 0 is noon
-  //     1 is one LED clockwise of noon (twards 1 o'clock)
-  //    -1 is one LED counter-clockwise of noon (twards 11 o'clock)
-  void setSingleLEDColor(int16_t position, CRGB color) {
-    position = (kNumLEDs - position + kClockRotationalOffsetToNoon) % kNumLEDs;
-    _leds[position] = color;
-  }
+    // Set a single LED to a specific color in "modulo coordinates"
+    // This offets the position to be reletive to the "noon" position, not the
+    // actual start of the LED strip.
+    // eg: 0 is noon
+    //     1 is one LED clockwise of noon (twards 1 o'clock)
+    //    -1 is one LED counter-clockwise of noon (twards 11 o'clock)
+    void setSingleLEDColor(int16_t position, CRGB color) {
+        position = (kNumLEDs - position + kClockRotationalOffsetToNoon) % kNumLEDs;
+        _leds[position] = color;
+    }
 
-  // Set the color for the markers at the poles: noon, three, six, and nine
-  void setPoleMarkers() {
-    // The color used to mark the "poles"
-    static const CRGB kMarkerColor = CRGB::White;
+    // Set the color for the markers at the poles: noon, three, six, and nine
+    void setPoleMarkers() {
+        // The color used to mark the "poles"
+        static const CRGB kMarkerColor = CRGB::White;
 
-    // Set each Pole LED to the pole color
-    setSingleLEDColor(0, kMarkerColor);                  // Noon
-    setSingleLEDColor(kNumLEDs / 4, kMarkerColor);       // Three
-    setSingleLEDColor(kNumLEDs / 2, kMarkerColor);       // Six
-    setSingleLEDColor((3 * kNumLEDs) / 4, kMarkerColor); // Nine
-  }
+        // Set each Pole LED to the pole color
+        setSingleLEDColor(0, kMarkerColor);                  // Noon
+        setSingleLEDColor(kNumLEDs / 4, kMarkerColor);       // Three
+        setSingleLEDColor(kNumLEDs / 2, kMarkerColor);       // Six
+        setSingleLEDColor((3 * kNumLEDs) / 4, kMarkerColor); // Nine
+    }
 
-  // Turn on a light for the second hand for a given time on the clock face.
-  void displaySecondHand(const RtcDateTime& time, CRGB color) {
-    uint16_t second_led = time.Second() * kNumLEDs / 60;
-    setSingleLEDColor(second_led, color);
-  }
+    // Turn on a light for the second hand for a given time on the clock face.
+    void displaySecondHand(const RtcDateTime& time, CRGB color) {
+        uint16_t second_led = time.Second() * kNumLEDs / 60;
+        setSingleLEDColor(second_led, color);
+    }
 
-  // Turn on a light for the minute hand for a given time on the clock face.
-  void displayMinuteHand(const RtcDateTime& time, CRGB color) {
-    uint16_t minute_led = time.Minute() * kNumLEDs / 60;
-    setSingleLEDColor(minute_led, color);
-  }
+    // Turn on a light for the minute hand for a given time on the clock face.
+    void displayMinuteHand(const RtcDateTime& time, CRGB color) {
+        uint16_t minute_led = time.Minute() * kNumLEDs / 60;
+        setSingleLEDColor(minute_led, color);
+    }
 
-  // Turn on a light for the hour hand for a given time on the clock face.
-  void displayHourHand(const RtcDateTime& time, CRGB color) {
-    uint16_t hour_led = (time.Hour() % 12) * kNumLEDs / 12;
-    hour_led += (kNumLEDs * time.Minute()) / (12 * 60); // Advance within the hour based on the minute
-    setSingleLEDColor(hour_led, color);
-  }
+    // Turn on a light for the hour hand for a given time on the clock face.
+    void displayHourHand(const RtcDateTime& time, CRGB color) {
+        uint16_t hour_led = (time.Hour() % 12) * kNumLEDs / 12;
+        hour_led += (kNumLEDs * time.Minute()) / (12 * 60); // Advance within the hour based on the minute
+        setSingleLEDColor(hour_led, color);
+    }
 
-  // Latch any new values into the LEDs
-  void show() const {
-    FastLED.show();
-  }
+    // Latch any new values into the LEDs
+    void show() const {
+        FastLED.show();
+    }
 
 private:
-  CRGB _leds[kNumLEDs];
+    CRGB _leds[kNumLEDs];
 };

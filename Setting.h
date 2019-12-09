@@ -10,30 +10,30 @@ typedef uint16_t EEPROMAddress;
 // can be restored automatically
 class Setting {
 public:
-  Setting(EEPROMAddress addr, uint8_t numValues) {
-    _addr = addr;
-    readValue();
+    Setting(EEPROMAddress addr, uint8_t numValues) {
+        _addr = addr;
+        readValue();
 
-    // If the number is out of range, set the setting to 0
-    if (_value >= numValues) {
-	setValue(0);
+        // If the number is out of range, set the setting to 0
+        if (_value >= numValues) {
+            setValue(0);
+        }
     }
-  }
 
-  void setValue(uint8_t newValue) {
-    EEPROM.update(_addr, newValue);
-    _value = newValue;
-  }
+    void setValue(uint8_t newValue) {
+        EEPROM.update(_addr, newValue);
+        _value = newValue;
+    }
 
-  uint8_t getValue() {
-    return _value;
-  }
+    uint8_t getValue() {
+        return _value;
+    }
 
-  void readValue() {
-    _value = EEPROM.read(_addr);
-  }
+    void readValue() {
+        _value = EEPROM.read(_addr);
+    }
 
 private:
-  EEPROMAddress _addr;
-  uint8_t _value;
+    EEPROMAddress _addr;
+    uint8_t _value;
 };
